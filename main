@@ -1,0 +1,78 @@
+import pandas as pd
+from datetime import datetime, timedelta
+import genetics
+import numpy as np
+
+data_structures = False
+time_conversions = False
+cross = True
+
+# read file in
+df1 = pd.read_csv(r"C:\Users\Lia\Desktop\tobiDataTime.csv")
+# df1 = pd.read_csv(r"/Users/liasilver/Desktop/tobiData.csv")
+df = df1.replace(np.nan, '', regex=True)
+
+tpop_size = len(df.index)
+temp_pop = [[]]
+initial_pop = [[[]]]
+for i in range(tpop_size):
+    gene = []
+    for j in range(9):  # 9 is numb of digits per gene
+        gene.append(df.loc[i][j])
+    temp_pop.append(gene)
+temp_pop.remove(temp_pop[0])  # remove first row with headings
+
+i = 0
+for i in range(1, tpop_size):
+    if i % 3 == 0:
+        chromosome = [temp_pop[i - 2], temp_pop[i - 1], temp_pop[i]]
+        initial_pop.append(chromosome)
+pop_size = len(initial_pop)  # 70, 210 genes
+
+# time conversion
+if time_conversions:
+    hours_less = 4
+    i = 0
+    j = 0
+    count = 0
+    for i in range(1, pop_size):
+        for j in range(3):
+            if initial_pop[i][j][1]:
+                if time_conversions:
+                    print("UTC time:")
+                    count += 1
+                    print(initial_pop[i][j][1])
+                utcTime = datetime(year=1, month=1, day=1, hour=(int(initial_pop[i][j][1].split(":")[0])),
+                                   minute=(int(initial_pop[i][j][1].split(":")[1])))
+                try:
+                    nycTime = utcTime - timedelta(hours=hours_less)
+                except OverflowError:
+                    print("OverflowError")
+                initial_pop[i][j][1] = nycTime.strftime("%H:%M:%S")
+                if time_conversions:
+                    print("NYC time:")
+                    print(initial_pop[i][j][1])
+                    print()
+    print(count)
+
+# travelling salesman with genetic algo
+# make up some data to test with
+
+if data_structures:
+    print("gene:")
+    print(initial_pop[1][0])
+
+    print("chromosome:")
+    print(initial_pop[1])
+
+    print("population:")
+    i = 0
+    for i in range(1, pop_size):
+        print(initial_pop[i])
+
+parents = [[[]]]
+i = 0
+for i in range(1, 35):
+    parents.append(initial_pop[i])
+    # print(parents[i])
+genetics.crossover(parents, cross)
