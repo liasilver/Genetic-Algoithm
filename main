@@ -5,6 +5,7 @@ import numpy as np
 
 data_structures = False
 time_conversions = False
+mates = False
 cross = True
 
 # read file in
@@ -69,10 +70,20 @@ if data_structures:
     i = 0
     for i in range(1, pop_size):
         print(initial_pop[i])
+if mates:
+    parents = []
+    i = 0
+    for i in range(1, 36):  # 36 divides evenly into 3, close to half of 70
+        for h in range(3):
+            parents.append(initial_pop[i][h])
+    genetics.find_mates(parents[40], parents, mates)
 
-parents = [[[]]]
-i = 0
-for i in range(1, 35):
-    parents.append(initial_pop[i])
-    # print(parents[i])
-genetics.crossover(parents, cross)
+# filler for halving pop. by fitness
+if cross:
+    parents = [[[]]]
+    i = 0
+    for i in range(1, 35):
+        parents.append(initial_pop[i])
+    off = genetics.crossover(parents, cross, remove_genes=[])
+
+
