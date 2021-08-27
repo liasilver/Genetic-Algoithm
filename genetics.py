@@ -1,12 +1,90 @@
+import math
 from datetime import datetime, timedelta
-import haversine as hs
-import random
+import googleMaps
+
+# pickup lat pickup long dropoff lat drop off long
+import googleMaps
 
 
-# def calc_fitness(pop):
-#    for i in range(len(pop)):
-#
-#
+def calc_fitness(pop, fit):
+    fitness = []
+    for c in range(len(pop)):
+        chrome_fitness = []
+        if fit:
+            print("chromosome", pop[c])
+        tot_distances = 0
+        tot_time = 0
+
+        for g in range(len(pop[c]) - 1):
+            loc1 = str(pop[c][g][4]) + "," + str(pop[c][g][5])
+            loc2 = str(pop[c][g+1][2]) + "," + str(pop[c][g+1][3])
+            time_between = googleMaps.map(loc1,loc2)[0]
+            tot_time+=time_between
+            distance_between = googleMaps.map(loc1,loc2)[1]
+            tot_distances += distance_between
+
+            if fit:
+                print()
+                print("gene 1:", pop[c][g])
+                print("gene 2:", pop[c][g + 1])
+                print("time between", time_between, "mins")
+                print("distance between:", distance_between, "km")
+
+        chrome_fitness.append(tot_distances)
+        chrome_fitness.append(tot_time)
+        fitness.append(chrome_fitness)
+
+        if fit:
+            print()
+            print("total distance", tot_distances, "km")
+            print("total time:", tot_time, "mins")
+            print()
+
+    if fit:
+        for i in range(len(fitness)):
+            print(fitness[i])
+
+
+
+    # if fit:
+    #     for c in range(len(pop)):
+    #         chrome_fitness = []
+    #         if fit:
+    #             print("chromosome", pop[c])
+    #         tot_distances = 0
+    #         tot_time = datetime(year=1, month=1, day=1, hour=0,minute=0)
+    #
+    #         for g in range(len(pop[c]) - 1):
+    #             # calc distance
+    #             dropoff_lat = math.radians(pop[c][g][4])
+    #             dropoff_long = math.radians(pop[c][g][5])
+    #             pickup_lat = math.radians(pop[c][g + 1][2])
+    #             pickup_long = math.radians(pop[c][g + 1][3])
+    #
+    #             dlat = pickup_lat - dropoff_lat
+    #             dlon = pickup_long - dropoff_long
+    #
+    #             a = math.sin(dlat / 2) ** 2 + math.cos(dropoff_lat) * math.cos(pickup_lat) * math.sin(dlon / 2) ** 2
+    #             b = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    #             distance = 6373.0 * b  # multiply by radius of earth to get km
+    #             tot_distances += distance
+    #
+    #             # calc time
+    #             trip_time1 = datetime(year=1, month=1, day=1, hour=(int(pop[c][g][1].split(":")[0])),
+    #                      minute=(int(pop[c][g][1].split(":")[1])))
+    #             trip_time2 = datetime(year=1, month=1, day=1, hour=(int(pop[c][g+1][1].split(":")[0])),
+    #                                        minute=(int(pop[c][g+1][1].split(":")[1])))
+    #             time_between = trip_time2 - trip_time1
+    #             tot_time += time_between
+
+
+
+
+
+
+
+
+
 # #return dictionary with chromosomes and fitnesses
 #
 #
@@ -26,9 +104,6 @@ def find_mates(gene, parents, mates):
     possible_mates = []
 
     #  automatically we know all null times are possible mates
-    for g in range(len(parents)):
-        if not parents[g][1]:
-            possible_mates.append(parents[g])
 
     previous_start_time = datetime(year=1, month=1, day=1, hour=(int(gene[1].split(":")[0])),
                                    minute=(int(gene[1].split(":")[1])))
@@ -44,90 +119,132 @@ def find_mates(gene, parents, mates):
         print()
 
     for g in range(len(parents)):
-        if parents[g][1]:  # if time is not null
-            next_start_time = datetime(year=1, month=1, day=1, hour=(int(parents[g][1].split(":")[0])),
-                                       minute=(int(parents[g][1].split(":")[1])))
+        next_start_time = datetime(year=1, month=1, day=1, hour=(int(parents[g][1].split(":")[0])),
+                                   minute=(int(parents[g][1].split(":")[1])))
+        if mates:
+            print("possible mate 2:", parents[g])
+            print("start_time", next_start_time.strftime("%H:%M:%S"))
+
+        if next_start_time >= tot_time:
+            possible_mates.append(parents[g])
+
             if mates:
-                print("possible mate 2:", parents[g])
-                print("start_time", next_start_time.strftime("%H:%M:%S"))
+                print(next_start_time.strftime("%H:%M:%S"), ">", tot_time.strftime("%H:%M:%S"))
+                print("can complete trip in time")
+                print()
+        else:
+            if mates:
+                print(next_start_time.strftime("%H:%M:%S"), "<", tot_time.strftime("%H:%M:%S"))
+                print("cannot complete trip in time")
+                print()
 
-            if next_start_time >= tot_time:
-                possible_mates.append(parents[g])
-
-                if mates:
-                    print(next_start_time.strftime("%H:%M:%S"), ">", tot_time.strftime("%H:%M:%S"))
-                    print("can complete trip in time")
-                    print()
-            else:
-                if mates:
-                    print(next_start_time.strftime("%H:%M:%S"), "<", tot_time.strftime("%H:%M:%S"))
-                    print("cannot complete trip in time")
-                    print()
+    for i in range(len(possible_mates)):
+        for j in range(0, len(possible_mates) - i - 1):
+            # Swap if current element is greater than next
+            current_time = int(possible_mates[j][1].split(":")[0] + possible_mates[j][1].split(":")[1])
+            next_time = int(possible_mates[j + 1][1].split(":")[0] + possible_mates[j + 1][1].split(":")[1])
+            if current_time > next_time:
+                possible_mates[j], possible_mates[j + 1] = possible_mates[j + 1], possible_mates[j]
 
     return possible_mates
 
 
-def crossover(parents, cross, remove_genes):
-    offspring = [[[]]]
+def crossover(parents, cross):
+    #offspring = ["ID", "RequestedPickUpTime","PickUpLat","PickUpLng","DropOffLat","DropOffLng",	"EstimatedDistance","EstimatedDuration (s)","SeatingNeedCode"]
+    offspring = []
+    remove_genes = []
+    drivers = 25  # 25 = num of drivers
 
-    for g in range(len(parents)):
-        try:
-            gene1 = random.choice(get_updated_parents(remove_genes, parents))
-        except IndexError:
-            break
+    for c in range(drivers):
+        chromosome = []
 
-        if cross:
-            print("parent population:", len(get_updated_parents(remove_genes, parents)))
-            print("gene1:", gene1)
+        parents = get_updated_parents(remove_genes, parents)
+        for i in range(len(parents)):
+            for j in range(0, len(parents) - i - 1):
+                # Swap if current element is greater than next
+                current_time = int(parents[j][1].split(":")[0] + parents[j][1].split(":")[1])
+                next_time = int(parents[j + 1][1].split(":")[0] + parents[j + 1][1].split(":")[1])
+                if current_time > next_time:
+                    parents[j], parents[j + 1] = parents[j + 1], parents[j]
 
+        gene1 = parents[0]
+        chromosome.append(gene1)
         remove_genes.append(gene1)
-
-        if gene1[1]:  # if gene1 has specific pickup time
-            if cross:
-                print("possible mates: ",
-                      len(find_mates(gene1, get_updated_parents(remove_genes, parents), mates=False)))
-            try:
-                gene2 = random.choice(find_mates(gene1, get_updated_parents(remove_genes, parents), mates=False))
-
-            except IndexError:
-                gene2 = random.choice(get_updated_parents(remove_genes, parents))
-
-        else:  # if gene has no pickup time
-            gene2 = random.choice(get_updated_parents(remove_genes, parents))
-        if cross:
-            print("gene2:", gene2)
-        remove_genes.append(gene2)
-
-        if gene2[1]:
-            if cross:
-                print("possible mates: ",
-                      len(find_mates(gene2, get_updated_parents(remove_genes, parents), mates=False)))
-            try:
-                gene3 = random.choice(find_mates(gene2, get_updated_parents(remove_genes, parents), mates=False))
-            except IndexError:
-
-                gene3 = random.choice(get_updated_parents(remove_genes, parents))
-        else:
-
-            gene3 = random.choice(get_updated_parents(remove_genes, parents))
-
-        if cross:
-            print("gene3:", gene3)
-            print()
-        remove_genes.append(gene3)
-
-        chromosome = [gene1, gene2, gene3]
         offspring.append(chromosome)
+
+    if cross:
+        print("FIRST PASS")
+        for i in range(len(offspring)):
+            print(offspring[i])
+
+    for c2 in range(drivers):
+        # if cross:
+        # print("possible mates: ", len(find_mates(offspring[c2][0], get_updated_parents(remove_genes, parents), mates=False)))
+        if len(find_mates(offspring[c2][0], get_updated_parents(remove_genes, parents), mates=False)) > 0:
+            gene2 = find_mates(offspring[c2][0], get_updated_parents(remove_genes, parents), mates=False)[0]
+            remove_genes.append(gene2)
+            offspring[c2].append(gene2)
+
+    if cross:
+        print()
+        print("SECOND PASS")
+        for j in range(len(offspring)):
+            print(offspring[j])
+
+    for c3 in range(drivers):
+        # if cross:
+        # print("possible mates: ", len(find_mates(offspring[c3][0], get_updated_parents(remove_genes, parents), mates=False)))
+        if len(offspring[c3]) == 2:
+            if len(find_mates(offspring[c3][1], get_updated_parents(remove_genes, parents), mates=False)) > 0:
+                gene3 = find_mates(offspring[c3][1], get_updated_parents(remove_genes, parents), mates=False)[0]
+                remove_genes.append(gene3)
+                offspring[c3].append(gene3)
+        else:
+            if len(find_mates(offspring[c3][0], get_updated_parents(remove_genes, parents), mates=False)) > 0:
+                gene3 = find_mates(offspring[c3][0], get_updated_parents(remove_genes, parents), mates=False)[0]
+                remove_genes.append(gene3)
+                offspring[c3].append(gene3)
+
+    if cross:
+        print()
+        print("THIRD PASS")
+        for j in range(len(offspring)):
+            print(offspring[j])
+        print("genes left:", len(get_updated_parents(remove_genes, parents)))
+
+    for c4 in range(drivers):
+
+        if len(offspring[c4]) == 3:
+            if len(find_mates(offspring[c4][2], get_updated_parents(remove_genes, parents), mates=False)) > 0:
+                gene4 = find_mates(offspring[c4][2], get_updated_parents(remove_genes, parents), mates=False)[0]
+                remove_genes.append(gene4)
+                offspring[c4].append(gene4)
+
+        elif len(offspring[c4]) == 2:
+            if len(find_mates(offspring[c4][1], get_updated_parents(remove_genes, parents), mates=False)) > 0:
+                gene4 = find_mates(offspring[c4][1], get_updated_parents(remove_genes, parents), mates=False)[0]
+                remove_genes.append(gene4)
+                offspring[c4].append(gene4)
+
+        else:
+            if len(find_mates(offspring[c4][0], get_updated_parents(remove_genes, parents), mates=False)) > 0:
+                gene4 = find_mates(offspring[c4][0], get_updated_parents(remove_genes, parents), mates=False)[0]
+                remove_genes.append(gene4)
+                offspring[c4].append(gene4)
+
+    if cross:
+        print()
+        print("FOURTH PASS")
+        for j in range(len(offspring)):
+            print(offspring[j])
+
+        print("genes left:", len(get_updated_parents(remove_genes, parents)))
     return offspring
 
 
 def get_updated_parents(remove_genes, parents):
     temp_parents = []
-    for c in range(1, len(parents)):
-        for g in range(3):
-            temp_parents.append(parents[c][g])
+    for c in range(len(parents)):
+        temp_parents.append(parents[c])
     updated = [elem for elem in temp_parents if elem not in remove_genes]
     return updated
-
-# def mutation(offspring):
-#    for i in range(len(offspring)):
