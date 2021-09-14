@@ -1,9 +1,7 @@
 import math
 from datetime import datetime, timedelta
-import googleMaps
-
 # pickup lat pickup long dropoff lat drop off long
-import googleMaps
+import googlemaps
 
 
 def calc_fitness(pop, fit):
@@ -18,9 +16,10 @@ def calc_fitness(pop, fit):
         for g in range(len(pop[c]) - 1):
             loc1 = str(pop[c][g][4]) + "," + str(pop[c][g][5])
             loc2 = str(pop[c][g+1][2]) + "," + str(pop[c][g+1][3])
-            time_between = googleMaps.map(loc1,loc2)[0]
+            time_distance= googlemaps.timeDistance(loc1, loc2)
+            time_between = time_distance[0]
             tot_time+=time_between
-            distance_between = googleMaps.map(loc1,loc2)[1]
+            distance_between = time_distance[1]
             tot_distances += distance_between
 
             if fit:
@@ -45,46 +44,6 @@ def calc_fitness(pop, fit):
             print(fitness[i])
 
 
-
-    # if fit:
-    #     for c in range(len(pop)):
-    #         chrome_fitness = []
-    #         if fit:
-    #             print("chromosome", pop[c])
-    #         tot_distances = 0
-    #         tot_time = datetime(year=1, month=1, day=1, hour=0,minute=0)
-    #
-    #         for g in range(len(pop[c]) - 1):
-    #             # calc distance
-    #             dropoff_lat = math.radians(pop[c][g][4])
-    #             dropoff_long = math.radians(pop[c][g][5])
-    #             pickup_lat = math.radians(pop[c][g + 1][2])
-    #             pickup_long = math.radians(pop[c][g + 1][3])
-    #
-    #             dlat = pickup_lat - dropoff_lat
-    #             dlon = pickup_long - dropoff_long
-    #
-    #             a = math.sin(dlat / 2) ** 2 + math.cos(dropoff_lat) * math.cos(pickup_lat) * math.sin(dlon / 2) ** 2
-    #             b = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    #             distance = 6373.0 * b  # multiply by radius of earth to get km
-    #             tot_distances += distance
-    #
-    #             # calc time
-    #             trip_time1 = datetime(year=1, month=1, day=1, hour=(int(pop[c][g][1].split(":")[0])),
-    #                      minute=(int(pop[c][g][1].split(":")[1])))
-    #             trip_time2 = datetime(year=1, month=1, day=1, hour=(int(pop[c][g+1][1].split(":")[0])),
-    #                                        minute=(int(pop[c][g+1][1].split(":")[1])))
-    #             time_between = trip_time2 - trip_time1
-    #             tot_time += time_between
-
-
-
-
-
-
-
-
-
 # #return dictionary with chromosomes and fitnesses
 #
 #
@@ -102,9 +61,6 @@ def find_mates(gene, parents, mates):
     # this will be run with a one dimensional array & never null time
     #  remember, you're looping through half the population (105)
     possible_mates = []
-
-    #  automatically we know all null times are possible mates
-
     previous_start_time = datetime(year=1, month=1, day=1, hour=(int(gene[1].split(":")[0])),
                                    minute=(int(gene[1].split(":")[1])))
     duration = int(gene[7])
