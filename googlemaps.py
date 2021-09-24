@@ -29,28 +29,19 @@ def plot(lat, lng, zoom=10, map_type='roadmap'):
     return p
 
 def map_route(p, chromosome):
-
-    for i in range(len(chromosome) - 1):
-        p.circle(chromosome[i][3], chromosome[i][2], size=10, alpha=0.5, color='green')
-        p.circle(chromosome[i][5], chromosome[i][4], size=10, alpha=0.5, color='green')
-        p.circle(chromosome[i+1][3], chromosome[i+1][2], size=10, alpha=0.5, color='green')
-        p.line([chromosome[i][3], chromosome[i][5]], [chromosome[i][2], chromosome[i][4]], line_width=2, color='black', alpha=0.3)
-        p.line([chromosome[i][5], chromosome[i + 1][3]], [chromosome[i][4], chromosome[i+1][2]], line_width=2,
-               color='black', alpha=0.3)
-
-
-    # LAT AND LONG ARE SWITCHED
-
-    # p.circle(-73.7061, 40.78209, size=10, alpha=0.5, color='red')
-    #p.circle(-73.6184, 40.70933, size=10, alpha=0.5, color='red')
-
-    # p.circle(-73.6453, 40.73827, size=10, alpha=0.5, color='orange')
-    # p.circle(-73.6848, 40.65596, size=10, alpha=0.5, color='orange')
-    #
-    # p.circle(-73.6497, 40.77011, size=10, alpha=0.5, color='blue')
-    # p.circle(-73.575, 40.67888, size=10, alpha=0.5, color='blue')
-    #
-    # p.circle(-73.5674, 40.70171, size=10, alpha=0.5, color='green')
-    # p.circle(-73.6124, 40.85639, size=10, alpha=0.5, color='green')
-
+    p.circle(chromosome[0][3], chromosome[0][2], size=7, alpha=0.5, color='blue')
+    p.circle(chromosome[0][5], chromosome[0][4], size=7, alpha=0.5, color='green')
+    for i in range(len(chromosome)):
+        p.line([chromosome[i][3], chromosome[i][5]], [chromosome[i][2], chromosome[i][4]], line_width=2, color='black',
+               alpha=0.4)
+        if i != 0 and i != len(chromosome)-1:
+            p.circle(chromosome[i][3], chromosome[i][2], size=7, alpha=0.5, color='green')
+            p.circle(chromosome[i][5], chromosome[i][4], size=7, alpha=0.5, color='green')
+        try:
+            p.line([chromosome[i][5], chromosome[i+1][3]], [chromosome[i][4], chromosome[i+1][2]], line_width=2, color='black',
+               alpha=0.2)
+        except IndexError:
+            p.circle(chromosome[i][3], chromosome[i][2], size=7, alpha=0.5, color='green')
+            p.circle(chromosome[i][5], chromosome[i][4], size=7, alpha=0.5, color='green')
+        print("trip", i, ":", chromosome[i])
     show(p)
