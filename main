@@ -11,8 +11,8 @@ fit = False
 show_map = True
 
 # read file in
-df1 = pd.read_csv(r"C:\Users\Lia\Desktop\tobiDataTime.csv")  # run this for PC
-#df1 = pd.read_csv(r"/Users/liasilver/Desktop/tobiData.csv")  # run this for MAC
+#df1 = pd.read_csv(r"C:\Users\Lia\Desktop\tobiDataTime.csv")  # run this for PC
+df1 = pd.read_csv(r"/Users/liasilver/Desktop/tobiData.csv")  # run this for MAC
 df = df1.replace(np.nan, '', regex=True)
 
 utc_pop = []
@@ -58,8 +58,8 @@ if cross:
     print("total population:", count)
 
 if fit:
-    genetics.calc_fitness(offspring, fit)
+    genetics.get_fitness(offspring[1], fit)
 
 if show_map:
     lat, lon = 40.7128, -73.8010
-    googlemaps.map_route(googlemaps.plot(lat,lon), offspring[0])
+    googlemaps.map_route(googlemaps.plot(lat,lon), offspring[1])
