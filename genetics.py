@@ -1,60 +1,46 @@
 import math
 from datetime import datetime, timedelta
 # pickup lat pickup long dropoff lat drop off long
-import googlemaps
+import map
 
+def get_fitness(chromosome, fit):
+    tot_distances = 0
+    tot_time = 0
+    for g in range(len(chromosome) - 1):
+        loc1 = str(chromosome[g][4]) + "," + str(chromosome[g][5])
+        loc2 = str(chromosome[g + 1][2]) + "," + str(chromosome[g + 1][3])
 
-def calc_fitness(pop, fit):
-    fitness = []
-    for c in range(len(pop)):
-        chrome_fitness = []
-        if fit:
-            print("chromosome", pop[c])
-        tot_distances = 0
-        tot_time = 0
+        trip_time = int(chromosome[g][7]) / 60
+        tot_time += trip_time
+        trip_distance = int(chromosome[g][6]) / 1000
+        tot_distances += trip_distance
 
-        for g in range(len(pop[c]) - 1):
-            loc1 = str(pop[c][g][4]) + "," + str(pop[c][g][5])
-            loc2 = str(pop[c][g+1][2]) + "," + str(pop[c][g+1][3])
-            time_distance= googlemaps.timeDistance(loc1, loc2)
-            time_between = time_distance[0]
-            tot_time+=time_between
-            distance_between = time_distance[1]
-            tot_distances += distance_between
+        time_distance = map.timeDistance(loc1, loc2)
+        driving_time_between = time_distance[0]
+        tot_time += driving_time_between
+        distance_between = time_distance[1]
+        tot_distances += distance_between
 
-            if fit:
-                print()
-                print("gene 1:", pop[c][g])
-                print("gene 2:", pop[c][g + 1])
-                print("time between", time_between, "mins")
-                print("distance between:", distance_between, "km")
-
-        chrome_fitness.append(tot_distances)
-        chrome_fitness.append(tot_time)
-        fitness.append(chrome_fitness)
-
+        trip1_start_time = datetime(year=1, month=1, day=1, hour=(int(chromosome[g][1].split(":")[0])),
+                                    minute=(int(chromosome[g][1].split(":")[1])))
+        trip2_start_time = datetime(year=1, month=1, day=1, hour=(int(chromosome[g + 1][1].split(":")[0])),
+                                    minute=(int(chromosome[g + 1][1].split(":")[1])))
+        time_between = trip2_start_time - trip1_start_time
+        extra_time = time_between - timedelta(minutes=tot_time)
         if fit:
             print()
-            print("total distance", tot_distances, "km")
-            print("total time:", tot_time, "mins")
+            print("gene 1:", chromosome[g])
+            print("gene 2:", chromosome[g + 1])
+            print("t1", trip1_start_time)
+            print("t2", trip2_start_time)
+            print("time between", time_between)
+            print("driving mins", tot_time)
+            print("extra time", extra_time)
             print()
+        # time_between_mins = int(time_between.strftime("%H:%M:%S").split(":")[0]*60 + int(time_between.strftime("%H:%M:%S").split(":")[1]))
+        # extra_time = time_between_mins - (tot_time/60)
 
-    if fit:
-        for i in range(len(fitness)):
-            print(fitness[i])
-
-
-# #return dictionary with chromosomes and fitnesses
-#
-#
-# def select_mates(pop):
-#     mates_dict ={}
-#     mates = [[]]
-#     for i in range(len(pop)):
-#         mates_dict[pop[i]] = calc_fitness(pop[i])
-#     mates_sorted = sorted(mates_dict.items(), key=lambda x: x[1], reverse=True)
-#     for j in range(len(mates_sorted)/2): # sort out numbers for everything
-#         mates.append()
+        # TODO add trip between times and requested times (subtract driving time from requested time differences and add that to driving times)
 
 
 def find_mates(gene, parents, mates):
@@ -64,22 +50,33 @@ def find_mates(gene, parents, mates):
     previous_start_time = datetime(year=1, month=1, day=1, hour=(int(gene[1].split(":")[0])),
                                    minute=(int(gene[1].split(":")[1])))
     duration = int(gene[7])
-    window = 1200  # 20 minutes in seconds, will find exact estimates for driving window later
-    tot_time = previous_start_time + timedelta(seconds=duration + window)
 
     if mates:
         print("mate 1:", gene)
         print("mate 1 start time:", previous_start_time.strftime("%H:%M:%S"))
-        print("duration", duration)
-        print("total time (duration + start):", tot_time.strftime("%H:%M:%S"))
         print()
 
     for g in range(len(parents)):
+        loc1 = str(gene[4]) + "," + str(gene[5])
+        loc2 = str(parents[g][2]) + "," + str(parents[g][3])
+        trip_time = int(gene[7]) / 60
+        tot_time = trip_time
+
+        #time_distance = googlemaps.timeDistance(loc1, loc2)
+        #driving_time_between = time_distance[0]
+        driving_time_between = 20
+        tot_time += driving_time_between
+
+        window = tot_time
+        tot_time = previous_start_time + timedelta(seconds=duration + window)
+
+
         next_start_time = datetime(year=1, month=1, day=1, hour=(int(parents[g][1].split(":")[0])),
                                    minute=(int(parents[g][1].split(":")[1])))
         if mates:
             print("possible mate 2:", parents[g])
             print("start_time", next_start_time.strftime("%H:%M:%S"))
+            print("driving time:", window, "minutes")
 
         if next_start_time >= tot_time:
             possible_mates.append(parents[g])
