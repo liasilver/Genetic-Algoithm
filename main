@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import genetics
 import numpy as np
-import googlemaps
+import map
 
 
 mates = False
@@ -62,4 +62,7 @@ if fit:
 
 if show_map:
     lat, lon = 40.7128, -73.8010
-    googlemaps.map_route(googlemaps.plot(lat,lon), offspring[1])
+    #googlemaps.map_route(googlemaps.plot(lat,lon), offspring[1])
+    map.route(map.plot(lat,lon), offspring[1])
+
+#map.timeDistance((40.7128, -73.8010), (40.7314, -73.9213))
