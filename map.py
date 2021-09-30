@@ -34,33 +34,33 @@ def plot(lat, lng, zoom=10, map_type='roadmap'):
     #show(p)
     return p
 
-def map_route(p, chromosome):
+
+def chromsome_route(p, chromosome):
     p.circle(chromosome[0][3], chromosome[0][2], size=7, alpha=0.5, color='blue')
     p.circle(chromosome[0][5], chromosome[0][4], size=7, alpha=0.5, color='green')
     for i in range(len(chromosome)):
-        p.line([chromosome[i][3], chromosome[i][5]], [chromosome[i][2], chromosome[i][4]], line_width=2, color='black',
-               alpha=0.4)
-        if i != 0 and i != len(chromosome)-1:
+        if i != 0 and i != len(chromosome) - 1:
             p.circle(chromosome[i][3], chromosome[i][2], size=7, alpha=0.5, color='green')
             p.circle(chromosome[i][5], chromosome[i][4], size=7, alpha=0.5, color='green')
+        loc1 = str(chromosome[i][2]) + "," + str(chromosome[i][3])
+        loc2 = str(chromosome[i][4]) + "," + str(chromosome[i][5])
+        route(p, loc1, loc2, a=1)
         try:
-            p.line([chromosome[i][5], chromosome[i+1][3]], [chromosome[i][4], chromosome[i+1][2]], line_width=2, color='black',
-               alpha=0.2)
+            loc3 = str(chromosome[i+1][2]) + "," + str(chromosome[i+1][3])
+            route(p, loc2, loc3, a=0.5)
         except IndexError:
             p.circle(chromosome[i][3], chromosome[i][2], size=7, alpha=0.5, color='green')
             p.circle(chromosome[i][5], chromosome[i][4], size=7, alpha=0.5, color='green')
-        print("trip", i, ":", chromosome[i])
-
     show(p)
 
-def route(p, chromosome):
+def route(p, loc1, loc2, a):
     gmaps = googlemaps.Client(key ='AIzaSyCoZXeFCIM0XBfv7jcdWvds4zfJcoGm7TA')
 
     marker_points = []
     waypoints = []
 
     # extract the location points from the previous directions function
-    results = gmaps.directions(origin=(40.8093,-73.4862), destination = (40.81912,-73.4577))
+    results = gmaps.directions(origin=(loc1), destination = (loc2))
     #print(results)
 
 
@@ -73,17 +73,8 @@ def route(p, chromosome):
     last_stop = results[0]["legs"][-1]["end_location"]
     marker_points.append(f'{last_stop["lat"]},{last_stop["lng"]}')
 
-
-    #p.line([chromosome[i][5], chromosome[i+1][3]], [chromosome[i][4], chromosome[i+1][2]], line_width=2, color='black',
-    #p.circle(float(marker_points[0].split(",")[1]),float(marker_points[0].split(",")[0]), size=7, alpha=0.5, color='green')
-    #p.line([float(marker_points[0].split(",")[1]), float(marker_points[1].split(",")[1])],[float(marker_points[0].split(",")[0]), float(marker_points[1].split(",")[0])], line_width=2, color='black')
-    #origin = (40.8093, -73.4862), destination = (, ))
-    p.circle(-73.4862,40.8093, size=7, alpha=0.5, color='green')
-    p.circle(-73.4577, 40.81912, size=7, alpha=0.5, color='green')
-    print(len(waypoints))
     for i in range(len(waypoints)-1):
-        p.line([float(waypoints[i].split(",")[1]), float(waypoints[i+1].split(",")[1])], [float(waypoints[i].split(",")[0]), float(waypoints[i+1].split(",")[0])], line_width=2, color='black')
+        p.line([float(waypoints[i].split(",")[1]), float(waypoints[i+1].split(",")[1])], [float(waypoints[i].split(",")[0]), float(waypoints[i+1].split(",")[0])], line_width=2, alpha = a, color='grey')
 
-    show(p)
 
 
