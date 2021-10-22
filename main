@@ -4,15 +4,15 @@ import genetics
 import numpy as np
 import map
 
-
 mates = False
-cross = False
+assign = False
 fit = False
 show_map = True
+algo = True
 
 # read file in
-#df1 = pd.read_csv(r"C:\Users\Lia\Desktop\tobiDataTime.csv")  # run this for PC
-df1 = pd.read_csv(r"/Users/liasilver/Desktop/tobiData.csv")  # run this for MAC
+# df1 = pd.read_csv(r"C:\Users\Lia\Desktop\tobiDataTime.csv")  # run this for PC
+df1 = pd.read_csv(r"/Users/liasilver/Desktop/tobiDataTime.csv")  # run this for MAC
 df = df1.replace(np.nan, '', regex=True)
 
 utc_pop = []
@@ -37,32 +37,43 @@ for i in range(len(utc_pop)):
         utc_pop[i][1] = nycTime.strftime("%H:%M:%S")
         initial_pop.append(utc_pop[i])
 
-
 if mates:
-    genetics.find_mates(initial_pop[40], initial_pop, mates)
+    genetics.find_mates(['94934', '13:00:00', 40.68579, -73.7145, 40.66357, -73.6982, 3294.0, 479.0, 0.0], initial_pop, mates)
 
 # filler for halving pop. by fitness
-
-
 parents = []
 i = 0
-for i in range(round(len(initial_pop)/2)):
+for i in range(round(len(initial_pop) / 2)):
     parents.append(initial_pop[i])
+#parents is an array of all trips
+#offspring = genetics.assign_trips(parents, assign)
+# if assign:
+#     count = 0
+#     for c in range(len(offspring)):
+#         for g in range (len(offspring[c])):
+#             count+=1
+#     print("total population:", count)
+# if fit:
+#     print(genetics.get_fitness(offspring[1], fit=False))
+#         #print("driver" + i + "fitness:" + str(genetics.get_fitness(offspring[i], fit=False)))
+#
 
-offspring = genetics.crossover(parents, cross)
-if cross:
-    count = 0
-    for c in range(len(offspring)):
-        for g in range (len(offspring[c])):
-            count+=1
-    print("total population:", count)
 
-if fit:
-    genetics.get_fitness(offspring[1], fit)
+# map.cached_timedistance((40.81399,-73.66153), (40.70436,-73.40356))
+population = genetics.algo(parents, algo)
 
+#3, 15
+#4,16
 if show_map:
     lat, lon = 40.7128, -73.8010
-    #googlemaps.map_route(googlemaps.plot(lat,lon), offspring[1])
-    map.route(map.plot(lat,lon), offspring[1])
+    map.chromsome_route(map.plot(lat,lon), population[0])
+    print()
+    print("MAPPED PARENT RUN")
+    print(genetics.get_fitness(population[0], fit))
 
-#map.timeDistance((40.7128, -73.8010), (40.7314, -73.9213))
+    map.chromsome_route(map.plot(lat, lon), population[12])
+    print()
+    print("MAPPED CHILD RUN")
+    print(genetics.get_fitness(population[12], fit))
+
+
