@@ -1,7 +1,8 @@
 import requests
 from bokeh.io import show
 from bokeh.plotting import gmap
-from bokeh.models import GMapOptions
+from bokeh.models import GMapOptions, Label
+from bokeh.models.widgets import Tabs, Panel
 import genetics
 import googlemaps
 
@@ -33,7 +34,7 @@ def cached_timedistance(loc1,loc2):
     return arr
 
 def plot(lat, lng, zoom=10, map_type='roadmap'):
-    bokeh_width, bokeh_height = 700, 600
+    bokeh_width, bokeh_height = 900, 600
     gmap_options = GMapOptions(lat=lat, lng=lng,
                                map_type=map_type, zoom=zoom)
     p = gmap("AIzaSyAz5utpPH8ALqDCcxD2IB4D14ZcWOj21p4", gmap_options, title='New York City',
@@ -54,10 +55,21 @@ def chromsome_route(p, chromosome):
         try:
             loc3 = str(chromosome[i+1][2]) + "," + str(chromosome[i+1][3])
             route(cache_route(loc2,loc3),p, a=0.5)
-        except IndexError:
             p.circle(chromosome[i][3], chromosome[i][2], size=7, alpha=0.5, color='green')
+            times = Label(x=130, y=70, x_units='screen', y_units='screen',
+                          text=chromosome[0][1] + ", " + chromosome[1][1] + ", " + chromosome[2][1] + ", " +
+                               chromosome[3][1], render_mode='css',
+                          border_line_color='black', border_line_alpha=1.0,
+                          background_fill_color='white', background_fill_alpha=0.5)
+        except IndexError:
             p.circle(chromosome[i][5], chromosome[i][4], size=7, alpha=0.5, color='green')
-    show(p)
+            times = Label(x=130, y=70, x_units='screen', y_units='screen',
+                          text=chromosome[0][1] + ", " + chromosome[1][1] + ", " + chromosome[2][1], render_mode='css',
+                          border_line_color='black', border_line_alpha=1.0,
+                          background_fill_color='white', background_fill_alpha=0.5)
+    p.add_layout(times)
+    return p
+    #show(p)
 
 ## restructure so that each trip is individual
 
@@ -94,8 +106,16 @@ def cache_route(loc1, loc2):
 
 def route(waypoints,p,a):
     for i in range(len(waypoints)-1):
-        #print(waypoints[i])
         p.line([float(waypoints[i].split(",")[1]), float(waypoints[i+1].split(",")[1])], [float(waypoints[i].split(",")[0]), float(waypoints[i+1].split(",")[0])], line_width=2, alpha = a, color='grey')
 
 
-#route(cahceroute)
+def final_gui(population):
+    lat,lon = 40.7128, -73.8010
+    abs = []
+    for i in range(len(population)):
+        trip_map = chromsome_route(plot(lat, lon), population[i])
+        panel = Panel(child = trip_map, title="Trip" + str(i))
+        abs.append(panel)
+
+    tabs = Tabs(tabs = abs)
+    show(tabs)
